@@ -78,3 +78,12 @@ android.*
 *.js
 !src/minshell.html
 !src/shell.html
+/.idea/discord.xml
+/.idea/editor.xml
+/.idea/.name
+/.idea/encodings.xml
+/.idea/markdown.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/raylib-gamejam.iml
+/.idea/vcs.xml
