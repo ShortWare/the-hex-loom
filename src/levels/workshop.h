@@ -6,7 +6,7 @@
 #include "../enums.h"
 #include "../tools/inputHelper.h"
 
-class Shop {
+class Workshop {
 
 
 public:
@@ -14,7 +14,7 @@ public:
         BeginTextureMode(target);
         ClearBackground(RAYWHITE);
 
-        DrawText("Shop", 160, 90, 120, MAROON);
+        DrawText("Workshop", 80, 90, 120, MAROON);
 
         int pos = GetMousePosition().x;
 
@@ -22,11 +22,19 @@ public:
             DrawRectangle(screenWidth - 20, 0, 20, screenHeight, SKYBLUE);
 
             if (inputHelper.isButtonClicked(0)) {
-                *gameScreen = GameScreen::SCREEN_WORKSHOP;
+                *gameScreen = GameScreen::SCREEN_BOOK;
+            }
+        }
+        if (pos < 20) {
+            DrawRectangle(0, 0, 20, screenHeight, SKYBLUE);
+
+            if (inputHelper.isButtonClicked(0)) {
+                *gameScreen = GameScreen::SCREEN_SHOP;
             }
         }
 
         EndTextureMode();
+
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -37,9 +45,10 @@ public:
 
         EndDrawing();
 
-
-        if (inputHelper.isKeyClicked(KEY_D)) {
-            *gameScreen = GameScreen::SCREEN_WORKSHOP;
+        if (inputHelper.isKeyClicked(KEY_A)) {
+            *gameScreen = GameScreen::SCREEN_SHOP;
+        } else if (inputHelper.isKeyClicked(KEY_D)) {
+            *gameScreen = GameScreen::SCREEN_BOOK;
         }
     }
 };

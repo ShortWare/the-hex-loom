@@ -13,7 +13,7 @@
 #include "levels/shop.h"
 #include "levels/book.h"
 #include "enums.h"
-#include "tools/mouseHelper.h"
+#include "tools/inputHelper.h"
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>      // Emscripten library
@@ -22,6 +22,8 @@
 #include <stdio.h>                          // Required for: printf()
 #include <stdlib.h>                         // Required for: 
 #include <string.h>                         // Required for:
+
+#include "levels/workshop.h"
 
 //----------------------------------------------------------------------------------
 // Defines and Macros
@@ -56,8 +58,9 @@ static GameScreen gameScreen = GameScreen::SCREEN_SHOP;
 
 Book book = Book();
 Shop shop = Shop();
+Workshop workshop = Workshop();
 
-MouseHelper mouseHelper = MouseHelper();
+InputHelper inputHelper = InputHelper();
 
 // TODO: Define global variables here, recommended to make them static
 
@@ -124,14 +127,17 @@ void UpdateDrawFrame(void)
    
     frameCounter++;
 
-    mouseHelper.update();
+    inputHelper.update();
 
     switch (gameScreen) {
         case GameScreen::SCREEN_BOOK:
-            book.render(target, frameCounter, screenWidth, screenHeight, &gameScreen, mouseHelper);
+            book.render(target, frameCounter, screenWidth, screenHeight, &gameScreen, inputHelper);
             break;
         case GameScreen::SCREEN_SHOP:
-            shop.render(target, frameCounter, screenWidth, screenHeight, &gameScreen, mouseHelper);
+            shop.render(target, frameCounter, screenWidth, screenHeight, &gameScreen, inputHelper);
+            break;
+        case GameScreen::SCREEN_WORKSHOP:
+            workshop.render(target, frameCounter, screenWidth, screenHeight, &gameScreen, inputHelper);
             break;
     }
 }

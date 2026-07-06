@@ -23,7 +23,8 @@ add_executable(${PROJECT_NAME}
         src/levels/shop.h
         src/levels/book.h
         src/enums.h
-        src/tools/mouseHelper.h
+        src/tools/inputHelper.h
+        src/levels/workshop.h
 )
 add_subdirectory(src)
 
