@@ -1,6 +1,6 @@
 <div align="center">
 
-# [Insert Name]
+# [The Hex Loom]
 
 **[Releases](https://github.com/ShortWare/raylib-gamejam/releases)**
 
