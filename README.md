@@ -11,3 +11,8 @@ CMake options
 ```
 -DPLATFORM=Web -DCMAKE_TOOLCHAIN_FILE=/home/Pd/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
 ```
+
+Server
+```
+python -m http.server 8000
+```
