@@ -1,3 +1,17 @@
+<div align="center">
+
+# [Insert Name]
+
+**[Releases](https://github.com/ShortWare/raylib-gamejam/releases)**
+
+[![License: Beerware](https://img.shields.io/badge/license-Beerware-yellow.svg)](https://github.com/Pdrewicz/RimForge)
+
+<br><br><br>
+
+</div>
+
+
+
 Install emsdk
 ```
 git clone https://github.com/emscripten-core/emsdk.git
