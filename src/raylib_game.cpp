@@ -20,6 +20,7 @@
 
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h> // Emscripten library
+#include "tools/soundManager.h"
 #endif
 
 #include <stdio.h>  // Required for: printf()
@@ -93,6 +94,9 @@ int main(void) {
   target = LoadRenderTexture(screenWidth, screenHeight);
   SetTextureFilter(target.texture, TEXTURE_FILTER_BILINEAR);
 
+
+  SoundManager::Initialize();
+
 #if defined(PLATFORM_WEB)
   emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
 #else
@@ -109,6 +113,8 @@ int main(void) {
   // De-Initialization
   //--------------------------------------------------------------------------------------
   UnloadRenderTexture(target);
+
+  SoundManager::Shutdown();
 
   // TODO: Unload all loaded resources at this point
 

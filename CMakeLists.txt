@@ -27,6 +27,8 @@ add_executable(${PROJECT_NAME}
         src/levels/workshop.h
         src/gameplay/castingGrid.h
         src/gameplay/spells.h
+        src/tools/soundManager.h
+        src/tools/soundManager.cpp
 )
 add_subdirectory(src)
 

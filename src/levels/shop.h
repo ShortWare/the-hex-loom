@@ -5,6 +5,7 @@
 #include "raylib.h"
 #include "../enums.h"
 #include "../tools/inputHelper.h"
+#include "../tools/soundManager.h"
 
 class Shop {
 
@@ -40,6 +41,7 @@ public:
 
         if (inputHelper.isKeyClicked(KEY_D)) {
             *gameScreen = GameScreen::SCREEN_WORKSHOP;
+            SoundManager::Play(SoundManager::MOVE);
         }
     }
 };

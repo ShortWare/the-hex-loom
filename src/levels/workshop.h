@@ -7,6 +7,7 @@
 #include "../tools/inputHelper.h"
 #include "../gameplay/castingGrid.h"
 #include "../gameplay/spells.h"
+#include "../tools/soundManager.h"
 
 class Workshop {
     CastingGrid* castingGrid = nullptr;
@@ -49,8 +50,10 @@ public:
 
         if (inputHelper.isKeyClicked(KEY_A)) {
             *gameScreen = GameScreen::SCREEN_SHOP;
+            SoundManager::Play(SoundManager::MOVE);
         } else if (inputHelper.isKeyClicked(KEY_D)) {
             *gameScreen = GameScreen::SCREEN_BOOK;
+            SoundManager::Play(SoundManager::MOVE);
         }
 
 
