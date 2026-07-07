@@ -25,6 +25,7 @@ add_executable(${PROJECT_NAME}
         src/enums.h
         src/tools/inputHelper.h
         src/levels/workshop.h
+        src/gameplay/castingGrid.h
 )
 add_subdirectory(src)
 

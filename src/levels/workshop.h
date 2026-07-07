@@ -5,9 +5,10 @@
 #include "raylib.h"
 #include "../enums.h"
 #include "../tools/inputHelper.h"
+#include "../gameplay/castingGrid.h"
 
 class Workshop {
-
+    CastingGrid* castingGrid = nullptr;
 
 public:
     void render(RenderTexture2D target, int frameCounter, float screenWidth, float screenHeight, GameScreen* gameScreen, InputHelper inputHelper) {
@@ -50,5 +51,29 @@ public:
         } else if (inputHelper.isKeyClicked(KEY_D)) {
             *gameScreen = GameScreen::SCREEN_BOOK;
         }
+
+        if (inputHelper.isButtonClicked(0)) {
+            if (castingGrid == nullptr) {
+                castingGrid = new CastingGrid(GetMousePosition());
+            } else if (!castingGrid->addPoint()) {
+                delete castingGrid;
+                castingGrid = nullptr;
+            }
+        }
+
+        if (inputHelper.isButtonClicked(1) && castingGrid != nullptr) {
+            delete castingGrid;
+            castingGrid = nullptr;
+        }
+
+        if (castingGrid == nullptr) return;
+
+        castingGrid->update();
+
+        BeginDrawing();
+
+        castingGrid->render();
+
+        EndDrawing();
     }
 };
