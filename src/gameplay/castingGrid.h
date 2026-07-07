@@ -6,6 +6,7 @@
 #include <vector>
 #include "../enums.h"
 #include <emscripten/emscripten.h>
+#include "spells.h"
 
 class CastingGrid {
     Color lineColor = SKYBLUE;
@@ -219,8 +220,7 @@ public:
     }
 };
 
-inline void evaluate(const std::vector<CastingMoves>& moves) {
-    emscripten_log(0,"Evaluate");
+inline Spells::Spell* evaluate(const std::vector<CastingMoves>& moves) {
     std::string str;
     for (auto move : moves) {
         switch (move) {
@@ -232,7 +232,15 @@ inline void evaluate(const std::vector<CastingMoves>& moves) {
                 break;
         }
     }
-    emscripten_log(0,str.c_str());
+    emscripten_log(0, str.c_str());
+
+    static Spells spells;
+
+    auto it = spells.spells.find(str);
+    if (it != spells.spells.end()) {
+        return it->second->clone();
+    }
+    return new Spells::Spell();
 }
 
 #endif

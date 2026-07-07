@@ -6,6 +6,7 @@
 #include "../enums.h"
 #include "../tools/inputHelper.h"
 #include "../gameplay/castingGrid.h"
+#include "../gameplay/spells.h"
 
 class Workshop {
     CastingGrid* castingGrid = nullptr;
@@ -65,7 +66,8 @@ public:
 
             if (castingGrid->isFinished()) {
                 auto moves = castingGrid->getMoves();
-                evaluate(moves);
+                const Spells::Spell *spell = evaluate(moves);
+                emscripten_log(0, spell->getName().c_str());
                 delete castingGrid;
                 castingGrid = nullptr;
             }
@@ -77,7 +79,8 @@ public:
 
                 if (castingGrid->getPointCount() >= 2 || !castingGrid->hasValidMoves()) {
                     auto moves = castingGrid->getMoves();
-                    evaluate(moves);
+                    const Spells::Spell *spell = evaluate(moves);
+                    emscripten_log(0, spell->getName().c_str());
                 }
 
                 delete castingGrid;
