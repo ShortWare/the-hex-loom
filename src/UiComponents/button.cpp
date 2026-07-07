@@ -2,9 +2,17 @@
 #include "raylib.h"
 
 void Button::draw() {
-  DrawRectangleRec(bounds, isHovered ? ORANGE : YELLOW);
-  DrawText(button_text.c_str(), bounds.x + 10,
-           bounds.y + bounds.height / 2 - 10, 20, WHITE);
+  if (isTexture) {
+    DrawTexture(!isHovered ? button_textures.button
+                           : button_textures.button_hovered,
+                bounds.x, bounds.y, WHITE);
+    DrawText(button_text.c_str(), bounds.x + 10,
+             bounds.y + bounds.height / 2 - 10, 20, WHITE);
+  } else {
+    DrawRectangleRec(bounds, isHovered ? ORANGE : YELLOW);
+    DrawText(button_text.c_str(), bounds.x + 10,
+             bounds.y + bounds.height / 2 - 10, 20, WHITE);
+  }
 }
 
 void Button::update() {
