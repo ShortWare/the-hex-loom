@@ -139,5 +139,7 @@ void UpdateDrawFrame(void)
         case GameScreen::SCREEN_WORKSHOP:
             workshop.render(target, frameCounter, screenWidth, screenHeight, &gameScreen, inputHelper);
             break;
+        default:
+            break;
     }
 }

@@ -52,27 +52,44 @@ public:
             *gameScreen = GameScreen::SCREEN_BOOK;
         }
 
-        if (inputHelper.isButtonClicked(0)) {
+
+
+
+        // Casting
+
+        if (IsMouseButtonDown(0)) {
             if (castingGrid == nullptr) {
                 castingGrid = new CastingGrid(GetMousePosition());
-            } else if (!castingGrid->addPoint()) {
+            }
+            castingGrid->update(GetMousePosition());
+
+            if (castingGrid->isFinished()) {
+                auto moves = castingGrid->getMoves();
+                evaluate(moves);
+                delete castingGrid;
+                castingGrid = nullptr;
+            }
+        } else {
+            if (castingGrid != nullptr) {
+                if (castingGrid->isOverlapPreview()) {
+                    castingGrid->commitOverlap();
+                }
+
+                if (castingGrid->getPointCount() >= 2 || !castingGrid->hasValidMoves()) {
+                    auto moves = castingGrid->getMoves();
+                    evaluate(moves);
+                }
+
                 delete castingGrid;
                 castingGrid = nullptr;
             }
         }
 
-        if (inputHelper.isButtonClicked(1) && castingGrid != nullptr) {
-            delete castingGrid;
-            castingGrid = nullptr;
-        }
-
-        if (castingGrid == nullptr) return;
-
-        castingGrid->update();
-
         BeginDrawing();
 
-        castingGrid->render();
+        if (castingGrid != nullptr) {
+            castingGrid->render();
+        }
 
         EndDrawing();
     }

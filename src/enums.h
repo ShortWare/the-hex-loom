@@ -12,4 +12,9 @@ enum class GameScreen {
     SCREEN_MARKET
 };
 
+enum class CastingMoves {
+    MOVE_LEFT,
+    MOVE_RIGHT
+};
+
 #endif //RAYLIB_GAME_TEMPLATE_ENUMS_H
