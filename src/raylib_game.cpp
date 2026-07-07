@@ -14,13 +14,14 @@
 #include "enums.h"
 #include "gamedata.hpp"
 #include "levels/book.h"
+#include "levels/settings.hpp"
 #include "levels/shop.h"
 #include "raylib.h"
 #include "tools/inputHelper.h"
 
 #if defined(PLATFORM_WEB)
-#include <emscripten/emscripten.h> // Emscripten library
 #include "tools/soundManager.h"
+#include <emscripten/emscripten.h> // Emscripten library
 #endif
 
 #include <stdio.h>  // Required for: printf()
@@ -67,7 +68,8 @@ Workshop workshop = Workshop();
 
 InputHelper inputHelper = InputHelper();
 
-MainMenu main_menu{gamestate, inputHelper};
+MainMenu main_menu{};
+SettingsMenu settings_menu{inputHelper};
 // TODO: Define global variables here, recommended to make them static
 
 //----------------------------------------------------------------------------------
@@ -94,8 +96,9 @@ int main(void) {
   target = LoadRenderTexture(screenWidth, screenHeight);
   SetTextureFilter(target.texture, TEXTURE_FILTER_BILINEAR);
 
-
   SoundManager::Initialize();
+  main_menu.setup(gamestate, inputHelper);
+  settings_menu.setup(gamestate, inputHelper);
 
 #if defined(PLATFORM_WEB)
   emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
@@ -140,12 +143,12 @@ void UpdateDrawFrame(void) {
 
   switch (gamestate.game_screen) {
   case GameScreen::SCREEN_BOOK:
-    book.render(target, frameCounter, screenWidth, screenHeight, &gamestate.game_screen,
-                inputHelper);
+    book.render(target, frameCounter, screenWidth, screenHeight,
+                &gamestate.game_screen, inputHelper);
     break;
   case GameScreen::SCREEN_SHOP:
-    shop.render(target, frameCounter, screenWidth, screenHeight, &gamestate.game_screen,
-                inputHelper);
+    shop.render(target, frameCounter, screenWidth, screenHeight,
+                &gamestate.game_screen, inputHelper);
     break;
   case GameScreen::SCREEN_WORKSHOP:
     workshop.render(target, frameCounter, screenWidth, screenHeight,
@@ -155,6 +158,9 @@ void UpdateDrawFrame(void) {
     main_menu.render(target, frameCounter, &gamestate.game_screen);
     break;
   case GameScreen::SCREEN_MARKET:
+    break;
+  case GameScreen::SCREEN_SETTINGS:
+    settings_menu.render(target, frameCounter);
     break;
   }
 }

@@ -30,6 +30,15 @@ void MainMenu::render(RenderTexture2D target, int frameCounter,
 
 void MainMenu::createButtons() {
   menu_buttons[0] = std::make_unique<Button>(
-      ih, Rectangle{10.f, 10.f, 128.f, 64}, "Start",
-      [&] { gs.game_screen = GameScreen::SCREEN_SHOP; });
+      *ih, Rectangle{10.f, 10.f, 128.f, 64.f}, "Start",
+      [&] { gs->game_screen = GameScreen::SCREEN_SHOP; });
+  menu_buttons[1] = std::make_unique<Button>(
+      *ih, Rectangle{10.f, 84.f, 128.f, 64.f}, "Settings",
+      [&] { gs->game_screen = GameScreen::SCREEN_SETTINGS; });
+}
+
+void MainMenu::setup(GameState &gamestate, InputHelper &ih) {
+  this->ih = &ih;
+  this->gs = &gamestate;
+  createButtons();
 }

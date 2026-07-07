@@ -11,6 +11,7 @@ enum class GameScreen {
     SCREEN_WORKSHOP,
     SCREEN_MARKET,
     SCREEN_MAINMENU,
+    SCREEN_SETTINGS,
 };
 
 enum class CastingMoves {

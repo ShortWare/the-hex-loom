@@ -10,14 +10,16 @@
 
 class MainMenu {
 public:
-  MainMenu(GameState &gamestate, InputHelper &ih) : ih(ih), gs(gamestate) {
+  MainMenu() {}
+  MainMenu(GameState *gamestate, InputHelper *ih) : ih(ih), gs(gamestate) {
     createButtons();
   }
   void render(RenderTexture2D target, int frameCounter, GameScreen *gameScreen);
+  void setup(GameState &gamestate, InputHelper &ih);
 
 private:
-  InputHelper &ih;
-  GameState &gs;
+  InputHelper *ih;
+  GameState *gs;
   std::array<std::unique_ptr<Button>, 2> menu_buttons;
   void createButtons();
 };
