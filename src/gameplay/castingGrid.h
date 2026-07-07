@@ -7,6 +7,7 @@
 #include "../enums.h"
 #include <emscripten/emscripten.h>
 #include "spells.h"
+#include "../tools/soundManager.h"
 
 class CastingGrid {
     Color lineColor = SKYBLUE;
@@ -35,6 +36,7 @@ class CastingGrid {
 public:
     CastingGrid(Vector2 start) {
         points.push_back(start);
+        SoundManager::Play(SoundManager::SPELL_DRAW);
     }
 
     size_t getPointCount() const { return points.size(); }
@@ -61,6 +63,7 @@ public:
                                            (mousePos.y - targetPos.y) * (mousePos.y - targetPos.y));
                 if (distToTarget <= lineLength * 0.5f) {
                     points.push_back(targetPos);
+                    SoundManager::Play(SoundManager::SPELL_DRAW);
                 }
             } else {
                 targetPos = mousePos;
@@ -142,6 +145,7 @@ public:
                                            (mousePos.y - targetPos.y) * (mousePos.y - targetPos.y));
                 if (distToTarget <= lineLength * 0.5f) {
                     points.push_back(targetPos);
+                    SoundManager::Play(SoundManager::SPELL_DRAW);
                 }
             }
         } else {
@@ -157,6 +161,7 @@ public:
     void commitOverlap() {
         if (!isOverlap || !previewValid || finished) return;
         points.push_back(targetPos);
+        SoundManager::Play(SoundManager::SPELL_DRAW);
         finished = true;
     }
 
@@ -238,8 +243,10 @@ inline Spells::Spell* evaluate(const std::vector<CastingMoves>& moves) {
 
     auto it = spells.spells.find(str);
     if (it != spells.spells.end()) {
+        SoundManager::Play(SoundManager::SPELL_FAIL);
         return it->second->clone();
     }
+        SoundManager::Play(SoundManager::SPELL_SUCCESS);
     return new Spells::Spell();
 }
 

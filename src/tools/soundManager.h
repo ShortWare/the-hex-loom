@@ -15,6 +15,9 @@ class SoundManager {
 public:
     enum SoundType {
         MOVE,
+        SPELL_FAIL,
+        SPELL_SUCCESS,
+        SPELL_DRAW,
         COUNT
     };
 
@@ -24,7 +27,10 @@ public:
         }
 
         const char* filenames[COUNT] = {
-            "move.wav"
+            "move.wav", // https://heltonyan.itch.io/pixelcombat
+            "spell_fail.wav", // https://heltonyan.itch.io/pixelcombat
+            "spell_success.wav", // https://heltonyan.itch.io/pixelcombat
+            "spell_draw.wav" // https://heltonyan.itch.io/pixelcombat
         };
 
         for (int i = 0; i < COUNT; i++) {
