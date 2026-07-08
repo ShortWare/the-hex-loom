@@ -21,8 +21,38 @@ class CastingGrid {
     bool isOverlap = false;
     std::vector<Vector2> points;
     bool finished = false;
+    Spells::Spell* spell{};
 
     int constraintX1, constraintY1, constraintX2, constraintY2;
+
+    std::vector<std::vector<Vector2>> otherSpells;
+
+    static bool onSegment(Vector2 p, Vector2 q, Vector2 r) {
+        return q.x <= std::max(p.x, r.x) + 0.001f && q.x >= std::min(p.x, r.x) - 0.001f &&
+               q.y <= std::max(p.y, r.y) + 0.001f && q.y >= std::min(p.y, r.y) - 0.001f;
+    }
+
+    static int orientation(Vector2 p, Vector2 q, Vector2 r) {
+        float val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+        if (fabsf(val) < 0.001f) return 0;
+        return (val > 0) ? 1 : 2;
+    }
+
+    static bool segmentsIntersect(Vector2 p1, Vector2 q1, Vector2 p2, Vector2 q2) {
+        int o1 = orientation(p1, q1, p2);
+        int o2 = orientation(p1, q1, q2);
+        int o3 = orientation(p2, q2, p1);
+        int o4 = orientation(p2, q2, q1);
+
+        if (o1 != o2 && o3 != o4) return true;
+
+        if (o1 == 0 && onSegment(p1, p2, q1)) return true;
+        if (o2 == 0 && onSegment(p1, q2, q1)) return true;
+        if (o3 == 0 && onSegment(p2, p1, q2)) return true;
+        if (o4 == 0 && onSegment(p2, q1, q2)) return true;
+
+        return false;
+    }
 
     [[nodiscard]] bool edgeExists(const Vector2& p1, const Vector2& p2) const {
         if (points.size() < 2) return false;
@@ -38,6 +68,21 @@ class CastingGrid {
         return false;
     }
 
+    [[nodiscard]] bool doesEdgeIntersectOtherSpells(const Vector2& p1, const Vector2& p2) const {
+        for (const auto& spellPoints : otherSpells) {
+            if (spellPoints.size() < 2) continue;
+            for (size_t i = 0; i < spellPoints.size() - 1; ++i) {
+                if (segmentsIntersect(p1, p2, spellPoints[i], spellPoints[i+1]))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    [[nodiscard]] bool isEdgeBlocked(const Vector2& p1, const Vector2& p2) const {
+        return edgeExists(p1, p2) || doesEdgeIntersectOtherSpells(p1, p2);
+    }
+
 public:
     CastingGrid(Vector2 start, int x1, int y1, int x2, int y2)
         : constraintX1(std::min(x1, x2)), constraintY1(std::min(y1, y2)),
@@ -49,6 +94,8 @@ public:
     }
 
     size_t getPointCount() const { return points.size(); }
+    std::vector<Vector2> getPoints() const { return points; }
+    Spells::Spell* getSpell() const { return spell; }
     bool isFinished() const { return finished; }
     bool isOverlapPreview() const { return isOverlap && previewValid; }
 
@@ -57,7 +104,9 @@ public:
                p.y >= constraintY1 && p.y <= constraintY2;
     }
 
-    void update(Vector2 mousePos) {
+    void update(Vector2 mousePos, const std::vector<std::vector<Vector2>>& otherSpellsParam) {
+        otherSpells = otherSpellsParam;
+
         if (finished) return;
 
         if (points.size() < 2) {
@@ -70,13 +119,11 @@ public:
                 dir.y = dir.y / length * lineLength;
                 targetPos = { points.back().x + dir.x, points.back().y + dir.y };
 
-                if (isInsideConstraint(targetPos)) {
-                    previewValid = true;
-                    isOverlap = false;
-                } else {
-                    previewValid = false;
-                    isOverlap = false;
-                }
+                bool inside = isInsideConstraint(targetPos);
+                bool externalOverlap = inside && doesEdgeIntersectOtherSpells(points.back(), targetPos);
+
+                previewValid = inside && !externalOverlap;
+                isOverlap = false;
 
                 float distToTarget = sqrtf((mousePos.x - targetPos.x) * (mousePos.x - targetPos.x) +
                                            (mousePos.y - targetPos.y) * (mousePos.y - targetPos.y));
@@ -159,12 +206,22 @@ public:
                 isOverlap = false;
                 targetPos = candidate;
             } else {
-                bool overlaps = edgeExists(last, candidate);
-                previewValid = true;
-                isOverlap = overlaps;
-                targetPos = candidate;
+                bool ownOverlap = edgeExists(last, candidate);
+                bool externalOverlap = doesEdgeIntersectOtherSpells(last, candidate);
 
-                if (!overlaps) {
+                if (externalOverlap) {
+                    previewValid = false;
+                    isOverlap = false;
+                    targetPos = candidate;
+                } else if (ownOverlap) {
+                    previewValid = true;
+                    isOverlap = true;
+                    targetPos = candidate;
+                } else {
+                    previewValid = true;
+                    isOverlap = false;
+                    targetPos = candidate;
+
                     float distToTarget = sqrtf((mousePos.x - targetPos.x) * (mousePos.x - targetPos.x) +
                                                (mousePos.y - targetPos.y) * (mousePos.y - targetPos.y));
                     if (distToTarget <= lineLength * 0.5f) {
@@ -223,12 +280,12 @@ public:
                     Vector2 rightEnd = { last.x + rightDir.x * lineLength,
                                          last.y + rightDir.y * lineLength };
 
-                    if (!edgeExists(last, leftEnd) && isInsideConstraint(leftEnd))
+                    if (!isEdgeBlocked(last, leftEnd) && isInsideConstraint(leftEnd))
                         DrawLineV(last, leftEnd, lineColorGuard);
-                    if (!edgeExists(last, rightEnd) && isInsideConstraint(rightEnd))
+                    if (!isEdgeBlocked(last, rightEnd) && isInsideConstraint(rightEnd))
                         DrawLineV(last, rightEnd, lineColorGuard);
 
-                    if (!edgeExists(last, leftEnd) && isInsideConstraint(leftEnd)) {
+                    if (!isEdgeBlocked(last, leftEnd) && isInsideConstraint(leftEnd)) {
                         Vector2 leftSecondaryLeft = {
                             leftDir.x * cos60 - leftDir.y * sin60,
                             leftDir.x * sin60 + leftDir.y * cos60
@@ -241,13 +298,13 @@ public:
                                                     leftEnd.y + leftSecondaryLeft.y  * lineLength };
                         Vector2 leftSecRightEnd = { leftEnd.x + leftSecondaryRight.x * lineLength,
                                                     leftEnd.y + leftSecondaryRight.y * lineLength };
-                        if (!edgeExists(leftEnd, leftSecLeftEnd) && isInsideConstraint(leftSecLeftEnd))
+                        if (!isEdgeBlocked(leftEnd, leftSecLeftEnd) && isInsideConstraint(leftSecLeftEnd))
                             DrawLineV(leftEnd, leftSecLeftEnd, lineColorGuardSecondary);
-                        if (!edgeExists(leftEnd, leftSecRightEnd) && isInsideConstraint(leftSecRightEnd))
+                        if (!isEdgeBlocked(leftEnd, leftSecRightEnd) && isInsideConstraint(leftSecRightEnd))
                             DrawLineV(leftEnd, leftSecRightEnd, lineColorGuardSecondary);
                     }
 
-                    if (!edgeExists(last, rightEnd) && isInsideConstraint(rightEnd)) {
+                    if (!isEdgeBlocked(last, rightEnd) && isInsideConstraint(rightEnd)) {
                         Vector2 rightSecondaryLeft = {
                             rightDir.x * cos60 - rightDir.y * sin60,
                             rightDir.x * sin60 + rightDir.y * cos60
@@ -260,9 +317,9 @@ public:
                                                      rightEnd.y + rightSecondaryLeft.y  * lineLength };
                         Vector2 rightSecRightEnd = { rightEnd.x + rightSecondaryRight.x * lineLength,
                                                      rightEnd.y + rightSecondaryRight.y * lineLength };
-                        if (!edgeExists(rightEnd, rightSecLeftEnd) && isInsideConstraint(rightSecLeftEnd))
+                        if (!isEdgeBlocked(rightEnd, rightSecLeftEnd) && isInsideConstraint(rightSecLeftEnd))
                             DrawLineV(rightEnd, rightSecLeftEnd, lineColorGuardSecondary);
-                        if (!edgeExists(rightEnd, rightSecRightEnd) && isInsideConstraint(rightSecRightEnd))
+                        if (!isEdgeBlocked(rightEnd, rightSecRightEnd) && isInsideConstraint(rightSecRightEnd))
                             DrawLineV(rightEnd, rightSecRightEnd, lineColorGuardSecondary);
                     }
                 }
@@ -270,6 +327,13 @@ public:
                 Color c = previewValid ? lineColor : lineColorError;
                 DrawLineV(points.back(), targetPos, c);
             }
+        }
+    }
+
+    void cleanRender() const {
+        if (points.size() < 2) return;
+        for (size_t i = 0; i < points.size() - 1; i++) {
+            DrawLineV(points[i], points[i + 1], lineColor);
         }
     }
 
@@ -314,30 +378,31 @@ public:
             last.y + (-dir.x * sin60 + dir.y * cos60) * lineLength
         };
 
-        return (!edgeExists(last, leftTarget)  && isInsideConstraint(leftTarget)) ||
-               (!edgeExists(last, rightTarget) && isInsideConstraint(rightTarget));
+        return (!isEdgeBlocked(last, leftTarget)  && isInsideConstraint(leftTarget)) ||
+               (!isEdgeBlocked(last, rightTarget) && isInsideConstraint(rightTarget));
+    }
+
+    Spells::Spell* evaluate() {
+        std::string str;
+        for (auto move : getMoves()) {
+            switch (move) {
+                case CastingMoves::MOVE_LEFT:  str += "L"; break;
+                case CastingMoves::MOVE_RIGHT: str += "R"; break;
+            }
+        }
+        emscripten_log(0, str.c_str());
+
+        static Spells spells;
+
+        auto it = spells.spells.find(str);
+        if (it != spells.spells.end()) {
+            SoundManager::Play(SoundManager::SPELL_SUCCESS);
+            spell = it->second->clone();
+            return spell;
+        }
+        SoundManager::Play(SoundManager::SPELL_FAIL);
+        return new Spells::Spell();
     }
 };
-
-inline Spells::Spell* evaluate(const std::vector<CastingMoves>& moves) {
-    std::string str;
-    for (auto move : moves) {
-        switch (move) {
-            case CastingMoves::MOVE_LEFT:  str += "L"; break;
-            case CastingMoves::MOVE_RIGHT: str += "R"; break;
-        }
-    }
-    emscripten_log(0, str.c_str());
-
-    static Spells spells;
-
-    auto it = spells.spells.find(str);
-    if (it != spells.spells.end()) {
-        SoundManager::Play(SoundManager::SPELL_FAIL);
-        return it->second->clone();
-    }
-    SoundManager::Play(SoundManager::SPELL_SUCCESS);
-    return new Spells::Spell();
-}
 
 #endif

@@ -64,10 +64,10 @@ public:
     }
 
     static float GetVolume() {
-        GetMasterVolume();
+        return GetMasterVolume();
     }
 
-    static float PlaySample() {
+    static void PlaySample() {
         Play(MOVE);
     }
 

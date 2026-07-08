@@ -11,7 +11,9 @@
 #include "../tools/roomSwitcher.h"
 
 class Workshop {
-    CastingGrid* castingGrid = nullptr;
+    std::shared_ptr<CastingGrid> castingGrid = nullptr;
+    std::vector<std::shared_ptr<CastingGrid>> castSpells{};
+    std::vector<std::vector<Vector2>> castSpellsPoints{};
 
 public:
     void render(RenderTexture2D target, int frameCounter, float screenWidth, float screenHeight, GameScreen* gameScreen, InputHelper inputHelper) {
@@ -71,19 +73,18 @@ public:
 
         if (IsMouseButtonDown(0)) {
             if (castingGrid == nullptr) {
-                castingGrid = new CastingGrid(mousePos,150,300,570,570);
+                castingGrid = std::make_shared<CastingGrid>(mousePos,150,300,570,570);
                 if (!castingGrid->isInsideConstraint(mousePos)) {
-                    delete castingGrid;
                     castingGrid = nullptr;
                 }
             }
-            if (castingGrid != nullptr) castingGrid->update(GetMousePosition());
+            std::vector<std::vector<Vector2>> previousSpells{};
+
+            if (castingGrid != nullptr) castingGrid->update(GetMousePosition(),castSpellsPoints);
 
             if (castingGrid != nullptr && castingGrid->isFinished()) {
-                auto moves = castingGrid->getMoves();
-                const Spells::Spell *spell = evaluate(moves);
+                const Spells::Spell *spell = castingGrid->evaluate();
                 emscripten_log(0, spell->getName().c_str());
-                delete castingGrid;
                 castingGrid = nullptr;
             }
         } else {
@@ -93,12 +94,12 @@ public:
                 }
 
                 if (castingGrid->getPointCount() >= 2 || !castingGrid->hasValidMoves()) {
-                    auto moves = castingGrid->getMoves();
-                    const Spells::Spell *spell = evaluate(moves);
+                    const Spells::Spell *spell = castingGrid->evaluate();
                     emscripten_log(0, spell->getName().c_str());
                 }
 
-                delete castingGrid;
+                castSpells.push_back(castingGrid);
+                castSpellsPoints.push_back(castingGrid->getPoints());
                 castingGrid = nullptr;
             }
         }
@@ -107,6 +108,9 @@ public:
 
         if (castingGrid != nullptr) {
             castingGrid->render();
+        }
+        for (auto& spell : castSpells) {
+            spell->cleanRender();
         }
 
         EndDrawing();
