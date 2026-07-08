@@ -13,8 +13,8 @@
 class CastingGrid {
     Color lineColor = SKYBLUE;
     Color lineColorError = RED;
-    Color lineColorGuard = GRAY;
-    Color lineColorGuardSecondary = LIGHTGRAY;
+    Color lineColorGuard = LIGHTGRAY;
+    Color lineColorGuardSecondary = GRAY;
     float lineLength = 40.0f;
     Vector2 targetPos{};
     bool previewValid = false;

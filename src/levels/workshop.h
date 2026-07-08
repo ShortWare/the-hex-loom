@@ -16,7 +16,8 @@ class Workshop {
 public:
     void render(RenderTexture2D target, int frameCounter, float screenWidth, float screenHeight, GameScreen* gameScreen, InputHelper inputHelper) {
         BeginTextureMode(target);
-        ClearBackground(RAYWHITE);
+
+        DrawTexture(TextureManager::GetTexture(TextureManager::WORKSHOP_BG),0,0,WHITE);
 
         DrawText("Workshop", 80, 90, 120, MAROON);
 
@@ -26,7 +27,6 @@ public:
 
 
         BeginDrawing();
-        ClearBackground(RAYWHITE);
 
 
         DrawTexturePro(target.texture, (Rectangle){ 0, 0, (float)target.texture.width, -(float)target.texture.height },

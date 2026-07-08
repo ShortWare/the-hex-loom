@@ -14,6 +14,7 @@ class TextureManager {
 public:
     enum TextureType {
         WALL,
+        WORKSHOP_BG,
         COUNT
     };
 
@@ -21,6 +22,7 @@ public:
 
         const char* filenames[COUNT] = {
             "levels/wall.png",
+            "levels/workshop_bg.png",
         };
 
         for (int i = 0; i < COUNT; i++) {
