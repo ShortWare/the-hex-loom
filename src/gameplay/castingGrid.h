@@ -4,6 +4,7 @@
 #include "raylib.h"
 #include <cmath>
 #include <vector>
+#include <algorithm>
 #include "../enums.h"
 #include <emscripten/emscripten.h>
 #include "spells.h"
@@ -21,6 +22,13 @@ class CastingGrid {
     std::vector<Vector2> points;
     bool finished = false;
 
+    int constraintX1, constraintY1, constraintX2, constraintY2;
+
+    bool isInsideConstraint(Vector2 p) const {
+        return p.x >= constraintX1 && p.x <= constraintX2 &&
+               p.y >= constraintY1 && p.y <= constraintY2;
+    }
+
     [[nodiscard]] bool edgeExists(const Vector2& p1, const Vector2& p2) const {
         if (points.size() < 2) return false;
         for (size_t i = 0; i < points.size() - 1; ++i) {
@@ -36,7 +44,10 @@ class CastingGrid {
     }
 
 public:
-    CastingGrid(Vector2 start) {
+    CastingGrid(Vector2 start, int x1, int y1, int x2, int y2)
+        : constraintX1(std::min(x1, x2)), constraintY1(std::min(y1, y2)),
+          constraintX2(std::max(x1, x2)), constraintY2(std::max(y1, y2))
+    {
         points.push_back(start);
         SoundManager::Play(SoundManager::SPELL_DRAW);
     }
@@ -58,12 +69,17 @@ public:
                 dir.y = dir.y / length * lineLength;
                 targetPos = { points.back().x + dir.x, points.back().y + dir.y };
 
-                previewValid = true;
-                isOverlap = false;
+                if (isInsideConstraint(targetPos)) {
+                    previewValid = true;
+                    isOverlap = false;
+                } else {
+                    previewValid = false;
+                    isOverlap = false;
+                }
 
                 float distToTarget = sqrtf((mousePos.x - targetPos.x) * (mousePos.x - targetPos.x) +
                                            (mousePos.y - targetPos.y) * (mousePos.y - targetPos.y));
-                if (distToTarget <= lineLength * 0.5f) {
+                if (previewValid && distToTarget <= lineLength * 0.5f) {
                     points.push_back(targetPos);
                     SoundManager::Play(SoundManager::SPELL_DRAW);
                 }
@@ -137,17 +153,23 @@ public:
                 last.y + chosenDir.y * lineLength
             };
 
-            bool overlaps = edgeExists(last, candidate);
-            previewValid = true;
-            isOverlap = overlaps;
-            targetPos = candidate;
+            if (!isInsideConstraint(candidate)) {
+                previewValid = false;
+                isOverlap = false;
+                targetPos = candidate;
+            } else {
+                bool overlaps = edgeExists(last, candidate);
+                previewValid = true;
+                isOverlap = overlaps;
+                targetPos = candidate;
 
-            if (!overlaps) {
-                float distToTarget = sqrtf((mousePos.x - targetPos.x) * (mousePos.x - targetPos.x) +
-                                           (mousePos.y - targetPos.y) * (mousePos.y - targetPos.y));
-                if (distToTarget <= lineLength * 0.5f) {
-                    points.push_back(targetPos);
-                    SoundManager::Play(SoundManager::SPELL_DRAW);
+                if (!overlaps) {
+                    float distToTarget = sqrtf((mousePos.x - targetPos.x) * (mousePos.x - targetPos.x) +
+                                               (mousePos.y - targetPos.y) * (mousePos.y - targetPos.y));
+                    if (distToTarget <= lineLength * 0.5f) {
+                        points.push_back(targetPos);
+                        SoundManager::Play(SoundManager::SPELL_DRAW);
+                    }
                 }
             }
         } else {
@@ -200,12 +222,12 @@ public:
                     Vector2 rightEnd = { last.x + rightDir.x * lineLength,
                                          last.y + rightDir.y * lineLength };
 
-                    if (!edgeExists(last, leftEnd))
+                    if (!edgeExists(last, leftEnd) && isInsideConstraint(leftEnd))
                         DrawLineV(last, leftEnd, lineColorGuard);
-                    if (!edgeExists(last, rightEnd))
+                    if (!edgeExists(last, rightEnd) && isInsideConstraint(rightEnd))
                         DrawLineV(last, rightEnd, lineColorGuard);
 
-                    if (!edgeExists(last, leftEnd)) {
+                    if (!edgeExists(last, leftEnd) && isInsideConstraint(leftEnd)) {
                         Vector2 leftSecondaryLeft = {
                             leftDir.x * cos60 - leftDir.y * sin60,
                             leftDir.x * sin60 + leftDir.y * cos60
@@ -218,13 +240,13 @@ public:
                                                     leftEnd.y + leftSecondaryLeft.y  * lineLength };
                         Vector2 leftSecRightEnd = { leftEnd.x + leftSecondaryRight.x * lineLength,
                                                     leftEnd.y + leftSecondaryRight.y * lineLength };
-                        if (!edgeExists(leftEnd, leftSecLeftEnd))
+                        if (!edgeExists(leftEnd, leftSecLeftEnd) && isInsideConstraint(leftSecLeftEnd))
                             DrawLineV(leftEnd, leftSecLeftEnd, lineColorGuardSecondary);
-                        if (!edgeExists(leftEnd, leftSecRightEnd))
+                        if (!edgeExists(leftEnd, leftSecRightEnd) && isInsideConstraint(leftSecRightEnd))
                             DrawLineV(leftEnd, leftSecRightEnd, lineColorGuardSecondary);
                     }
 
-                    if (!edgeExists(last, rightEnd)) {
+                    if (!edgeExists(last, rightEnd) && isInsideConstraint(rightEnd)) {
                         Vector2 rightSecondaryLeft = {
                             rightDir.x * cos60 - rightDir.y * sin60,
                             rightDir.x * sin60 + rightDir.y * cos60
@@ -237,9 +259,9 @@ public:
                                                      rightEnd.y + rightSecondaryLeft.y  * lineLength };
                         Vector2 rightSecRightEnd = { rightEnd.x + rightSecondaryRight.x * lineLength,
                                                      rightEnd.y + rightSecondaryRight.y * lineLength };
-                        if (!edgeExists(rightEnd, rightSecLeftEnd))
+                        if (!edgeExists(rightEnd, rightSecLeftEnd) && isInsideConstraint(rightSecLeftEnd))
                             DrawLineV(rightEnd, rightSecLeftEnd, lineColorGuardSecondary);
-                        if (!edgeExists(rightEnd, rightSecRightEnd))
+                        if (!edgeExists(rightEnd, rightSecRightEnd) && isInsideConstraint(rightSecRightEnd))
                             DrawLineV(rightEnd, rightSecRightEnd, lineColorGuardSecondary);
                     }
                 }
@@ -291,7 +313,8 @@ public:
             last.y + (-dir.x * sin60 + dir.y * cos60) * lineLength
         };
 
-        return !edgeExists(last, leftTarget) || !edgeExists(last, rightTarget);
+        return (!edgeExists(last, leftTarget)  && isInsideConstraint(leftTarget)) ||
+               (!edgeExists(last, rightTarget) && isInsideConstraint(rightTarget));
     }
 };
 
@@ -299,12 +322,8 @@ inline Spells::Spell* evaluate(const std::vector<CastingMoves>& moves) {
     std::string str;
     for (auto move : moves) {
         switch (move) {
-            case CastingMoves::MOVE_LEFT:
-                str += "L";
-                break;
-            case CastingMoves::MOVE_RIGHT:
-                str += "R";
-                break;
+            case CastingMoves::MOVE_LEFT:  str += "L"; break;
+            case CastingMoves::MOVE_RIGHT: str += "R"; break;
         }
     }
     emscripten_log(0, str.c_str());
@@ -316,7 +335,7 @@ inline Spells::Spell* evaluate(const std::vector<CastingMoves>& moves) {
         SoundManager::Play(SoundManager::SPELL_FAIL);
         return it->second->clone();
     }
-        SoundManager::Play(SoundManager::SPELL_SUCCESS);
+    SoundManager::Play(SoundManager::SPELL_SUCCESS);
     return new Spells::Spell();
 }
 

@@ -71,7 +71,7 @@ public:
 
         if (IsMouseButtonDown(0)) {
             if (castingGrid == nullptr) {
-                castingGrid = new CastingGrid(GetMousePosition());
+                castingGrid = new CastingGrid(GetMousePosition(),150,300,570,570);
             }
             castingGrid->update(GetMousePosition());
 
