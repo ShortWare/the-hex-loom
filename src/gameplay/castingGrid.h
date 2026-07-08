@@ -24,11 +24,6 @@ class CastingGrid {
 
     int constraintX1, constraintY1, constraintX2, constraintY2;
 
-    bool isInsideConstraint(Vector2 p) const {
-        return p.x >= constraintX1 && p.x <= constraintX2 &&
-               p.y >= constraintY1 && p.y <= constraintY2;
-    }
-
     [[nodiscard]] bool edgeExists(const Vector2& p1, const Vector2& p2) const {
         if (points.size() < 2) return false;
         for (size_t i = 0; i < points.size() - 1; ++i) {
@@ -48,6 +43,7 @@ public:
         : constraintX1(std::min(x1, x2)), constraintY1(std::min(y1, y2)),
           constraintX2(std::max(x1, x2)), constraintY2(std::max(y1, y2))
     {
+        if (!isInsideConstraint(start)) return;
         points.push_back(start);
         SoundManager::Play(SoundManager::SPELL_DRAW);
     }
@@ -55,6 +51,11 @@ public:
     size_t getPointCount() const { return points.size(); }
     bool isFinished() const { return finished; }
     bool isOverlapPreview() const { return isOverlap && previewValid; }
+
+    bool isInsideConstraint(Vector2 p) const {
+        return p.x >= constraintX1 && p.x <= constraintX2 &&
+               p.y >= constraintY1 && p.y <= constraintY2;
+    }
 
     void update(Vector2 mousePos) {
         if (finished) return;

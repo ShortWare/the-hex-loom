@@ -21,7 +21,7 @@ public:
 
         DrawText("Workshop", 80, 90, 120, MAROON);
 
-        int mousePos = GetMousePosition().x;
+        Vector2 mousePos = GetMousePosition();
 
         EndTextureMode();
 
@@ -47,7 +47,7 @@ public:
             return;
         }
 
-        if (mousePos >= screenWidth - 20) {
+        if (mousePos.x >= screenWidth - 20) {
             DrawRectangle(screenWidth - 20, 0, 20, screenHeight, SKYBLUE);
 
             if (inputHelper.isButtonClicked(0)) {
@@ -55,7 +55,7 @@ public:
                 SoundManager::Play(SoundManager::MOVE);
             }
         }
-        if (mousePos < 20) {
+        if (mousePos.x < 20) {
             DrawRectangle(0, 0, 20, screenHeight, SKYBLUE);
 
             if (inputHelper.isButtonClicked(0)) {
@@ -71,11 +71,15 @@ public:
 
         if (IsMouseButtonDown(0)) {
             if (castingGrid == nullptr) {
-                castingGrid = new CastingGrid(GetMousePosition(),150,300,570,570);
+                castingGrid = new CastingGrid(mousePos,150,300,570,570);
+                if (!castingGrid->isInsideConstraint(mousePos)) {
+                    delete castingGrid;
+                    castingGrid = nullptr;
+                }
             }
-            castingGrid->update(GetMousePosition());
+            if (castingGrid != nullptr) castingGrid->update(GetMousePosition());
 
-            if (castingGrid->isFinished()) {
+            if (castingGrid != nullptr && castingGrid->isFinished()) {
                 auto moves = castingGrid->getMoves();
                 const Spells::Spell *spell = evaluate(moves);
                 emscripten_log(0, spell->getName().c_str());
