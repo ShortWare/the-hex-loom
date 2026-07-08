@@ -32,7 +32,7 @@ public:
 
         EndDrawing();
 
-        if (inputHelper.isKeyClicked(KEY_A)) {
+        if (inputHelper.isKeyClicked(KEY_A) && !RoomSwitcher::isActive()) {
             RoomSwitcher::switchRoom(GameScreen::SCREEN_WORKSHOP, false);
             SoundManager::Play(SoundManager::MOVE);
         }
@@ -48,7 +48,7 @@ public:
         if (mousePos < 20) {
             DrawRectangle(0, 0, 20, screenHeight, SKYBLUE);
 
-            if (inputHelper.isButtonClicked(0)) {
+            if (inputHelper.isButtonClicked(0) && !RoomSwitcher::isActive()) {
                 RoomSwitcher::switchRoom(GameScreen::SCREEN_WORKSHOP, false);
                 SoundManager::Play(SoundManager::MOVE);
             }

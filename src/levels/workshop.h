@@ -36,10 +36,10 @@ public:
 
         EndDrawing();
 
-        if (inputHelper.isKeyClicked(KEY_A)) {
+        if (inputHelper.isKeyClicked(KEY_A) && !RoomSwitcher::isActive()) {
             RoomSwitcher::switchRoom(GameScreen::SCREEN_SHOP, false);
             SoundManager::Play(SoundManager::MOVE);
-        } else if (inputHelper.isKeyClicked(KEY_D)) {
+        } else if (inputHelper.isKeyClicked(KEY_D) && !RoomSwitcher::isActive()) {
             RoomSwitcher::switchRoom(GameScreen::SCREEN_BOOK, true);
             SoundManager::Play(SoundManager::MOVE);
         }
@@ -52,7 +52,7 @@ public:
         if (mousePos.x >= screenWidth - 20) {
             DrawRectangle(screenWidth - 20, 0, 20, screenHeight, SKYBLUE);
 
-            if (inputHelper.isButtonClicked(0)) {
+            if (inputHelper.isButtonClicked(0) && !RoomSwitcher::isActive()) {
                 RoomSwitcher::switchRoom(GameScreen::SCREEN_BOOK, true);
                 SoundManager::Play(SoundManager::MOVE);
             }
@@ -60,7 +60,7 @@ public:
         if (mousePos.x < 20) {
             DrawRectangle(0, 0, 20, screenHeight, SKYBLUE);
 
-            if (inputHelper.isButtonClicked(0)) {
+            if (inputHelper.isButtonClicked(0) && !RoomSwitcher::isActive()) {
                 RoomSwitcher::switchRoom(GameScreen::SCREEN_SHOP, false);
                 SoundManager::Play(SoundManager::MOVE);
             }

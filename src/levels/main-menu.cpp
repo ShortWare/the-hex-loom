@@ -2,12 +2,14 @@
 #include "raylib.h"
 #include <memory>
 
+#include "../tools/textureManager.h"
+
 void MainMenu::render(RenderTexture2D target, int frameCounter,
                       GameScreen *gameScreen) {
 
   BeginTextureMode(target);
   {
-    ClearBackground(RAYWHITE);
+    DrawTexture(TextureManager::GetTexture(TextureManager::MAIN_MENU_BG),0,0,WHITE);
     for (const auto &b : menu_buttons) {
       b->update();
       b->draw();
